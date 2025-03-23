@@ -15,12 +15,14 @@ const List = () => {
 
   const [page, setPage] = useState<SpringPage<Employee>>();
 
+  const [activePage, setActivePage] = useState<number>(0);
+
   const getEmployees = useCallback(() => {
     const config: AxiosRequestConfig = {
       method: "GET",
       url: "/employees",
       params: {
-        page: 0,
+        page: activePage,
         size: 4,
       },
       withCredentials: true,
@@ -29,14 +31,14 @@ const List = () => {
     requestBackend(config).then((response) => {
       setPage(response.data);
     });
-  }, []);
+  }, [activePage]);
 
   useEffect(() => {
     getEmployees();
   }, [getEmployees]);
 
   const handlePageChange = (pageNumber: number) => {
-    // to do
+    setActivePage(pageNumber);
   };
 
   return (
@@ -58,9 +60,9 @@ const List = () => {
       </div>
 
       <Pagination
-        forcePage={0}
-        pageCount={1}
-        range={3}
+        forcePage={page?.number}
+        pageCount={page ? page.totalPages : 0}
+        range={4}
         onChange={handlePageChange}
       />
     </>
