@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { requestBackend } from 'util/requests';
 import Select from 'react-select';
 import { AxiosRequestConfig } from 'axios';
+import { toast } from 'react-toastify';
 
 
 type FormData = {
@@ -33,22 +34,17 @@ const Form = () => {
   }, []);
 
   const onSubmit = (formData: FormData) => {
-    const data = {
-      ...formData,
-      department : {
-        id: formData.department.id,
-        name: null
-      }
-    };
-
+    
     const config: AxiosRequestConfig = {
       method: 'POST',
       url: "/employees",
-      data,
+      data: formData,
       withCredentials: true,
     };
     requestBackend(config).then((response) => {
-      console.log(response);
+      console.log(response.data);
+      toast.info("Cadastrado com sucesso");
+      history.replace("/admin/employees");
     });
   }  
 
@@ -68,8 +64,9 @@ const Form = () => {
                 })}
                 type="text" 
                   className={`form-control base-input ${errors.name ? "is-invalid" : ""}`}
-                  placeholder="Nome do funcionário"
+                  placeholder="Nome"
                   name="name"
+                  data-testid="name"
                 />
                 <div className="invalid-feedback d-block">
                   {errors.name?.message}
@@ -80,11 +77,16 @@ const Form = () => {
                 <input 
                 {...register("email", {
                   required: "Campo obrigatório",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Email inválido"
+                  }
                 })}
                 type="text" 
                   className={`form-control base-input ${errors.email ? "is-invalid" : ""}`}
-                  placeholder="E-mail do funcionário"
+                  placeholder="Email"
                   name="email"
+                  data-testid="email"
                 />
                 <div className="invalid-feedback d-block">
                   {errors.email?.message}
@@ -92,6 +94,7 @@ const Form = () => {
               </div>
 
               <div className="margin-bottom-30">
+                <label htmlFor="department" className="d-none">Departamento</label>
                 <Controller 
                   name="department"
                   rules={{ required: true }}
@@ -104,8 +107,10 @@ const Form = () => {
                       classNamePrefix="department-select"
                       getOptionLabel={(department: Department) => department.name}
                       getOptionValue={(department:Department) => String(department.id)}
-                    />
-                      )}/>
+                      inputId="department"
+                    />)} 
+                />
+
                 {errors.department && (
                   <div className="invalid-feedback d-block">
                   Campo obrigatório
